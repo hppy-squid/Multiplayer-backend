@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.multiplayer_grupp1.multiplayer_grupp1.model.Question;
 import com.multiplayer_grupp1.multiplayer_grupp1.service.QuestionService;
 
+import lombok.RequiredArgsConstructor;
+
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/question")
 public class QuestionController {
 
