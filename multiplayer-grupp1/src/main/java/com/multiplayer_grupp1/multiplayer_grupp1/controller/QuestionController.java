@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/api/question")
 public class QuestionController {
 
-    private QuestionService questionService;
+    private final QuestionService questionService;
 
     @GetMapping("/questionAndAnswers")
     public Question getQuestionAndAnswers(@RequestParam String LobbyCode) {
