@@ -6,9 +6,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-import jakarta.persistence.Entity;
-
-@Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
