@@ -1,5 +1,6 @@
 package com.multiplayer_grupp1.multiplayer_grupp1.model;
 
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.Entity;
@@ -22,7 +23,9 @@ public class Question {
     private String correctAnswer;
 
     // Bör nog göras om till lista då det troligtvis ska bestå av tre stycken 
-    private String incorrectAnswer; 
+    private List<String> incorrectAnswers; 
+
+    private String answers;
 
     private String difficulty;
 
@@ -32,5 +35,7 @@ public class Question {
 
     private String type; 
 
+
+    // Behövs specifika konstruktors för när hämtar fråga och svarsalternativ och när hämtar korrekt svar 
 
 }

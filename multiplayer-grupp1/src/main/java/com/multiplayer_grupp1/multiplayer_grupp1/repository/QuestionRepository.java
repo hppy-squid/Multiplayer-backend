@@ -9,5 +9,9 @@ import com.multiplayer_grupp1.multiplayer_grupp1.model.Question;
 
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, UUID>{
+
+    Question getQuestionByLobbyCode();
+    
+    Question getCorrectAnswer();
     
 }
