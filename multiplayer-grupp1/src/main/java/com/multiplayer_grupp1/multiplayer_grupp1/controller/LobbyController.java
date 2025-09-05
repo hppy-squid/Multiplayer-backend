@@ -3,15 +3,13 @@ package com.multiplayer_grupp1.multiplayer_grupp1.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.multiplayer_grupp1.multiplayer_grupp1.service.QuestionService;
-
+import com.multiplayer_grupp1.multiplayer_grupp1.service.LobbyService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/question")
-public class QuestionController {
+@RequestMapping("/api/lobby")
+public class LobbyController {
 
-    private final QuestionService questionService;
-    
+    private final LobbyService lobbyService;
 }
