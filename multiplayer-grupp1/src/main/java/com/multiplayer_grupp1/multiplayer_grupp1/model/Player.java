@@ -1,15 +1,17 @@
 package com.multiplayer_grupp1.multiplayer_grupp1.model;
 
-
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-@Getter
-@Setter
+import jakarta.persistence.Entity;
+
+@Entity
 @AllArgsConstructor
+@NoArgsConstructor
+@Data
 public class Player {
 
     private UUID id;
