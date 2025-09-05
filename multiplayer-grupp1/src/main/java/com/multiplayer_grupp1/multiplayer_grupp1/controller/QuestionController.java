@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/api/question")
 public class QuestionController {
 
-    @Autowired
     private QuestionService questionService;
 
     @GetMapping("/questionAndAnswers")
