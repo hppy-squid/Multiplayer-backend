@@ -5,8 +5,8 @@ import lombok.*;
 import java.util.UUID;
 
 
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class Player {
 
