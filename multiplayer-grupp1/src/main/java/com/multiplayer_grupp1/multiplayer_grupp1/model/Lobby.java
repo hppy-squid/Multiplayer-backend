@@ -15,8 +15,6 @@ public class Lobby {
 
     private String lobbyCode = UUID.randomUUID().toString();
 
-    private int maxPlayers;
-
     private List<Player> players = new ArrayList<>(4);
 
     private GameState gameState;
