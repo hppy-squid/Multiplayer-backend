@@ -14,13 +14,15 @@ import com.multiplayer_grupp1.multiplayer_grupp1.model.Question;
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long>{
 
+    // Icebox, gör MVP med enbart GENERAL_KNOWLEDGE
     List<Question> findByCategory(Category category);
 
+    // Icebox, gör MVP med enbart EASY
     List<Question> findByDifficulty(Difficulty difficulty);
 
+    // Hade vi inte enbart använt denna oavsett, de två ovanstående borde ej nyttjas?
     List<Question> findByCategoryAndDifficulty(Category category, Difficulty difficulty);
 
-    Optional<Question> findById(Long questionId);
-
-    
+    // Osäker på hur denna skulle användas 
+    Optional<Question> findById(Long questionId);    
 }
