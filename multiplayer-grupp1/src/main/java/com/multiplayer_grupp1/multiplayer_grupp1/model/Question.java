@@ -36,14 +36,4 @@ public class Question {
 
     private String incorrect_answer_3;
 
-    // En lista med svarsalternativ
-    @Transient
-    private List<String> options;
-
-    // Index för det korrekta svaret i listan med svarsalternativ (kanske blir lättare att skicka hela korrekta svaret när rundan klar)
-    private int correctAnswerIndex;
-
-
-    // Behövs specifika konstruktors för när hämtar fråga och svarsalternativ och när hämtar korrekt svar 
-
 }
