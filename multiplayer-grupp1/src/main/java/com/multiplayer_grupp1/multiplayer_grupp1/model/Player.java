@@ -1,20 +1,24 @@
 package com.multiplayer_grupp1.multiplayer_grupp1.model;
 
+import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.UUID;
 
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Data
+@Entity
+@RequiredArgsConstructor
+@Getter
+@Setter
 public class Player {
 
-    private String id = UUID.randomUUID().toString();
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
+    @Column(nullable = false)
     private String playerName;
 
-    private int score;
+    private int score = 0;
 
-    private boolean isHost;
+    private boolean isHost = false;
 }
