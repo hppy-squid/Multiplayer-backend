@@ -21,15 +21,18 @@ public class QuestionController {
 
     private final QuestionService questionService;
 
-    @GetMapping("/questionAndAnswers")
-    public Question getQuestionAndAnswers(@RequestParam String LobbyCode) {
-        return questionService.getQuestionAndAnswers();
+    /*
+        @GetMapping("/questionAndAnswers")
+    public Question getQuestionAndAnswers(@RequestParam int id) {
+        return questionService.getQuestionAndAnswers(id);
     }
 
     @GetMapping("/correctAnswer")
-    public Question getCorrectAnswer(@RequestParam String LobbyCode, @RequestParam UUID questionId) {
+    public Question getCorrectAnswer(@RequestParam String lobbyCode, @RequestParam UUID questionId) {
         return questionService.getCorrectAnswer();
     }
+     */
+
     
     
     

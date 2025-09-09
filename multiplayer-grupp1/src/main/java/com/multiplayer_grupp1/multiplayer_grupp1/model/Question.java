@@ -3,37 +3,36 @@ package com.multiplayer_grupp1.multiplayer_grupp1.model;
 import java.util.List;
 import java.util.UUID;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
-@AllArgsConstructor
 @NoArgsConstructor
-@Data
+@AllArgsConstructor
+@Getter
+@Setter
 public class Question {
     // Id för fråga 
     @Id
-    @GeneratedValue
-    private UUID questionId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long questionId;
 
-    private String correctAnswer;
+    // texten i frågan
+    private String text;
 
-    // Bör nog göras om till lista då det troligtvis ska bestå av tre stycken 
-    private List<String> incorrectAnswers; 
+    // En lista med svarsalternativ
+    @ElementCollection
+    private List<String> options;
 
-    private String answers;
+    // Index för det korrekta svaret i listan med svarsalternativ
+    private int correctAnswerIndex;
 
-    private String difficulty;
+    private Category category;
 
-    private String category; 
+    private Difficulty difficulty;
 
-    private String question; 
 
-    private String type; 
+
 
 
     // Behövs specifika konstruktors för när hämtar fråga och svarsalternativ och när hämtar korrekt svar 

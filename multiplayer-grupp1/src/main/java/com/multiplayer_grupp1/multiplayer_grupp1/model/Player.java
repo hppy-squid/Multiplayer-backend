@@ -1,17 +1,16 @@
 package com.multiplayer_grupp1.multiplayer_grupp1.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.UUID;
 
-@AllArgsConstructor
+
 @NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class Player {
 
-    private UUID id;
+    private String id = UUID.randomUUID().toString();
 
     private String playerName;
 
