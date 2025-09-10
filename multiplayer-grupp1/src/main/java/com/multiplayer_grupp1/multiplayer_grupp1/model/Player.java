@@ -3,8 +3,6 @@ package com.multiplayer_grupp1.multiplayer_grupp1.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-
-
 @Entity
 @RequiredArgsConstructor
 @Getter

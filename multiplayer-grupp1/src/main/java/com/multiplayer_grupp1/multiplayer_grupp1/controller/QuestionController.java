@@ -3,12 +3,14 @@ package com.multiplayer_grupp1.multiplayer_grupp1.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.multiplayer_grupp1.multiplayer_grupp1.Dto.AnswerDTO;
+import com.multiplayer_grupp1.multiplayer_grupp1.Dto.QuestionDTO;
 import com.multiplayer_grupp1.multiplayer_grupp1.model.Question;
 import com.multiplayer_grupp1.multiplayer_grupp1.service.QuestionService;
 
 import lombok.RequiredArgsConstructor;
 
-import java.util.UUID;
+import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,19 +23,18 @@ public class QuestionController {
 
     private final QuestionService questionService;
 
-    /*
-        @GetMapping("/questionAndAnswers")
-    public Question getQuestionAndAnswers(@RequestParam int id) {
-        return questionService.getQuestionAndAnswers(id);
+
+    // Frontend måste slumpa siffra mellan 1-50 och skicka det till backend, 
+    // frontend bör nog slumpa alla talen samtidigt och se till att de inte överensstämmer 
+    // och sedan skicka ett i taget?
+    @GetMapping("/questionAndOptions")
+    public List<QuestionDTO> getQuestionAndOptions(@RequestParam Long question_id) {
+        return questionService.getQuestionById(question_id);
     }
 
     @GetMapping("/correctAnswer")
-    public Question getCorrectAnswer(@RequestParam String lobbyCode, @RequestParam UUID questionId) {
-        return questionService.getCorrectAnswer();
+    public AnswerDTO getCorrectAnswer(@RequestParam Long question_id) {
+        return questionService.getCorrectAnswer(question_id);
     }
-     */
-
-    
-    
-    
+  
 }

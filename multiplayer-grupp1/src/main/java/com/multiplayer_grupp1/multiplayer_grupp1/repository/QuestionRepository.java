@@ -1,28 +1,34 @@
 package com.multiplayer_grupp1.multiplayer_grupp1.repository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
-import com.multiplayer_grupp1.multiplayer_grupp1.model.Category;
-import com.multiplayer_grupp1.multiplayer_grupp1.model.Difficulty;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
+import com.multiplayer_grupp1.multiplayer_grupp1.Dto.AnswerDTO;
+import com.multiplayer_grupp1.multiplayer_grupp1.Dto.QuestionDTO;
 import com.multiplayer_grupp1.multiplayer_grupp1.model.Question;
 
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
 @Repository
-public interface QuestionRepository extends JpaRepository<Question, Long>{
+public interface QuestionRepository extends CrudRepository<Question, Long>{
 
-    // Icebox, gör MVP med enbart GENERAL_KNOWLEDGE
-    List<Question> findByCategory(Category category);
+    // Hämtar fråga och svarsalternativ 
+    @Query(value = """
+            SELECT q.question, q.question_id, qo.option_text
+            FROM question AS q
+            JOIN question_options AS qo
+            WHERE q.question_id = qo.question_id AND q.question_id = :question_id
+            ORDER BY qo.option_text ASC;
+            """, nativeQuery = true)
+    List<QuestionDTO> getQuestionAndOptionsById(Long question_id);
 
-    // Icebox, gör MVP med enbart EASY
-    List<Question> findByDifficulty(Difficulty difficulty);
-
-    // Hade vi inte enbart använt denna oavsett, de två ovanstående borde ej nyttjas?
-    List<Question> findByCategoryAndDifficulty(Category category, Difficulty difficulty);
-
-    // Osäker på hur denna skulle användas 
-    Optional<Question> findById(Long questionId);    
+    // Hämta korrekt svar 
+    @Query(value = """
+            SELECT correct_answer, question_id 
+            FROM question
+            WHERE question_id = :question_id
+            """, nativeQuery = true)
+    AnswerDTO getCorrectAnswerById(Long question_id);    
 }

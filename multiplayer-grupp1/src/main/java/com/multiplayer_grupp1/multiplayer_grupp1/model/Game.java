@@ -17,4 +17,7 @@ public class Game {
 
     private Question currentQuestion;
 
+    // Håller koll på vilka frågor som tagits tidigare, måste kontrolleras mot när vi hämtar frågor 
+    private List<String> previousQuestionIds; 
+
 }
