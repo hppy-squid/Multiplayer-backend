@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LobbyRepository extends JpaRepository<Lobby, Long> {
 
-    boolean existsByLobbyName(String lobbyName);
+    boolean existsByLobbyCode(String lobbyCode);
 
     Lobby findByLobbyCode(String lobbyCode);
 }
