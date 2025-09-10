@@ -10,6 +10,8 @@ import com.multiplayer_grupp1.multiplayer_grupp1.service.QuestionService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -26,7 +28,7 @@ public class QuestionController {
     // frontend bör nog slumpa alla talen samtidigt och se till att de inte överensstämmer 
     // och sedan skicka ett i taget?
     @GetMapping("/questionAndOptions")
-    public QuestionDTO getQuestionAndOptions(@RequestParam Long question_id) {
+    public List<QuestionDTO> getQuestionAndOptions(@RequestParam Long question_id) {
         return questionService.getQuestionById(question_id);
     }
 

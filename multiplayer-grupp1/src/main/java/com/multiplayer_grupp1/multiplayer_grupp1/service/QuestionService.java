@@ -4,6 +4,9 @@ import com.multiplayer_grupp1.multiplayer_grupp1.Dto.AnswerDTO;
 import com.multiplayer_grupp1.multiplayer_grupp1.Dto.QuestionDTO;
 import com.multiplayer_grupp1.multiplayer_grupp1.Exceptions.QuestionNotFoundException;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.multiplayer_grupp1.multiplayer_grupp1.repository.QuestionRepository;
@@ -15,8 +18,8 @@ public class QuestionService {
     private final QuestionRepository questionRepository;
 
     //Denna bör hämta frågan och svarsalternativen
-    public QuestionDTO getQuestionById(Long question_id) {
-        return questionRepository.getById(question_id);
+    public List<QuestionDTO> getQuestionById(Long question_id) {
+        return questionRepository.getQuestionAndOptionsById(question_id);
     }
 
     public AnswerDTO getCorrectAnswer(Long question_id) {

@@ -1,5 +1,6 @@
 package com.multiplayer_grupp1.multiplayer_grupp1.Dto;
 
+import java.lang.foreign.Linker.Option;
 import java.util.List;
 
 import lombok.Data;
@@ -9,17 +10,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class QuestionDTO {
 
-    private Long question_id; 
-
     private String question; 
 
-    private List<String> options;
+    private Long question_id; 
+
+    private String option_text;
+
 
     // Konstruktor för att skicka fråga och svarsalternativ 
-    public QuestionDTO(Long question_id, String question, List<String> options){
-        this.question_id = question_id; 
+    public QuestionDTO(String question, Long question_id, String option_text){
         this.question = question; 
-        this.options = options;
+        this.question_id = question_id; 
+        this.option_text = option_text;
     }
 
 }
