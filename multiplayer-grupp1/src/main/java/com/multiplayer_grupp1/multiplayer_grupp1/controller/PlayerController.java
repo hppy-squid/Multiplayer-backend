@@ -1,5 +1,6 @@
 package com.multiplayer_grupp1.multiplayer_grupp1.controller;
 
+import com.multiplayer_grupp1.multiplayer_grupp1.Dto.PlayerDTO;
 import com.multiplayer_grupp1.multiplayer_grupp1.model.Player;
 import com.multiplayer_grupp1.multiplayer_grupp1.service.PlayerService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ public class PlayerController {
     private final PlayerService playerService;
 
     @PostMapping("/create")
-    public Player createPlayer(@RequestBody Player player){
+    public PlayerDTO createPlayer(@RequestBody Player player){
         return playerService.createPlayer(player);
     }
 }
