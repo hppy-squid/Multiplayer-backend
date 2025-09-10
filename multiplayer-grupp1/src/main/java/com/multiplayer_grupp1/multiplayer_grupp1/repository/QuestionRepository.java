@@ -19,7 +19,8 @@ public interface QuestionRepository extends CrudRepository<Question, Long>{
             SELECT q.question, q.question_id, qo.option_text
             FROM question AS q
             JOIN question_options AS qo
-            WHERE q.question_id = qo.question_id AND q.question_id = :question_id;
+            WHERE q.question_id = qo.question_id AND q.question_id = :question_id
+            ORDER BY qo.option_text ASC;
             """, nativeQuery = true)
     List<QuestionDTO> getQuestionAndOptionsById(Long question_id);
 
