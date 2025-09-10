@@ -1,9 +1,11 @@
 package com.multiplayer_grupp1.multiplayer_grupp1.service;
 
+import com.multiplayer_grupp1.multiplayer_grupp1.Exceptions.*;
+import com.multiplayer_grupp1.multiplayer_grupp1.model.Lobby;
+import com.multiplayer_grupp1.multiplayer_grupp1.repository.LobbyRepository;
 import org.springframework.stereotype.Service;
 
 import com.multiplayer_grupp1.multiplayer_grupp1.Dto.PlayerDTO;
-import com.multiplayer_grupp1.multiplayer_grupp1.Exceptions.PlayerAlreadyExists;
 import com.multiplayer_grupp1.multiplayer_grupp1.model.Player;
 import com.multiplayer_grupp1.multiplayer_grupp1.repository.PlayerRepository;
 
@@ -14,9 +16,11 @@ import lombok.RequiredArgsConstructor;
 public class PlayerService {
 
     private final PlayerRepository playerRepository;
+    private final LobbyRepository lobbyRepository;
 
 
-    private Player ConvertToEntity(PlayerDTO playerDTO) {
+    // Konverterar PlayerDTO till Player entity för att spara i databasen
+    public Player convertToEntity(PlayerDTO playerDTO) {
         Player player = new Player();
         player.setId(playerDTO.id());
         player.setPlayerName(playerDTO.playerName());
@@ -25,7 +29,8 @@ public class PlayerService {
         return player;
     }
 
-    private PlayerDTO ConvertToDTO(Player player) {
+    // Konverterar Player entity till PlayerDTO för att skicka till klienten
+    public PlayerDTO convertToDTO(Player player) {
         return new PlayerDTO(
                 player.getId(),
                 player.getPlayerName(),
@@ -33,11 +38,18 @@ public class PlayerService {
                 player.isHost());
     }
 
+    // Skapar en ny spelare
     public PlayerDTO createPlayer(Player player) {
+        // Kollar om spelaren redan finns i databasen baserat på spelarens namn
         if (playerRepository.existsByPlayerName(player.getPlayerName())) {
+            // Om true, kastar en exception
             throw new PlayerAlreadyExists("Player with name " + player.getPlayerName() + " already exists.");
         }
+        // Skapar en ny spelare och sparar den i databasen
         Player newPlayer = playerRepository.save(player);
-        return ConvertToDTO(newPlayer);
+
+        // Returnerar den sparade spelaren som en PlayerDTO
+        return convertToDTO(newPlayer);
     }
+
 }
