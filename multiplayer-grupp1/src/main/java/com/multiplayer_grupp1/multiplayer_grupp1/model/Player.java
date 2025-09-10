@@ -21,4 +21,7 @@ public class Player {
     private int score = 0;
 
     private boolean isHost = false;
+
+    @ManyToOne
+    private Lobby lobby;
 }
