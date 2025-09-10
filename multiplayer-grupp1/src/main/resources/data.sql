@@ -48,3 +48,24 @@ INSERT INTO question ( difficulty, category, question, correct_answer, incorrect
 INSERT INTO question ( difficulty, category, question, correct_answer, incorrect_answer_1, incorrect_answer_2, incorrect_answer_3) VALUES ( "EASY", "GENERAL_KNOWLEDGE", "What is the largest living species of penguin?", "Emperor", "King", "Gentoo", "Adele");
 INSERT INTO question ( difficulty, category, question, correct_answer, incorrect_answer_1, incorrect_answer_2, incorrect_answer_3) VALUES ( "EASY", "GENERAL_KNOWLEDGE", "When one is &quot;envious&quot;, they are said to be what color?", "Green", "Red", "Blue", "Yellow");
 INSERT INTO question ( difficulty, category, question, correct_answer, incorrect_answer_1, incorrect_answer_2, incorrect_answer_3) VALUES ( "EASY", "GENERAL_KNOWLEDGE", "Which sign of the zodiac is represented by the Crab?", "Cancer", "Libra", "Virgo", "Sagittarius");
+
+
+/* Lägger en constraint på option tabellen som gör att duplicerade värden ej bör förekomma */
+ALTER TABLE question_options
+ADD CONSTRAINT unique_question_options UNIQUE(question_id, option_text);
+/* Populerar options tabellen med datan från question, 
+nyttjar WHERE NOT EXISTS så att den inte insertar om det finns data i tabellen, 
+detta gör att vi slipper att datan duplicerar varje gång man startar programmet */
+INSERT IGNORE INTO question_options (question_id, option_text)
+SELECT question_id, correct_answer
+FROM question 
+UNION ALL 
+SELECT question_id, incorrect_answer_1
+FROM question 
+UNION ALL 
+SELECT question_id, incorrect_answer_2
+FROM question 
+UNION ALL 
+SELECT question_id, incorrect_answer_3
+FROM question
+; 
