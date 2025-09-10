@@ -21,5 +21,6 @@ public class Player {
     private boolean isHost = false;
 
     @ManyToOne
+    @JoinColumn(name = "lobby_id")
     private Lobby lobby;
 }
