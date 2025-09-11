@@ -1,7 +1,5 @@
 package com.multiplayer_grupp1.multiplayer_grupp1.Dto;
 
-import java.lang.foreign.Linker.Option;
-import java.util.List;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

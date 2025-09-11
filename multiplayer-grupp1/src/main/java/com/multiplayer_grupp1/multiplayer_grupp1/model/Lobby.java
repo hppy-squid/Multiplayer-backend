@@ -1,23 +1,35 @@
 package com.multiplayer_grupp1.multiplayer_grupp1.model;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
+
+
+@Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 public class Lobby {
 
-    // Blir alltför långt om meningen är att detta är koden spelarna joinar med, bör nog ha 6-teckn lobbykod
-    private String lobbyCode = UUID.randomUUID().toString();
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
+    private String lobbyCode = RandomStringUtils.randomAlphanumeric(6).toUpperCase();
+
+    @OneToMany(mappedBy = "lobby", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Player> players = new ArrayList<>(4);
 
+    @Enumerated(EnumType.STRING)
     private GameState gameState;
 
 }

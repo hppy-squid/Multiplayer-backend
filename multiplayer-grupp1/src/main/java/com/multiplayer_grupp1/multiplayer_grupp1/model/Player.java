@@ -19,4 +19,8 @@ public class Player {
     private int score = 0;
 
     private boolean isHost = false;
+
+    @ManyToOne
+    @JoinColumn(name = "lobby_id")
+    private Lobby lobby;
 }
