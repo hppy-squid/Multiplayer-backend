@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Ready Check WebSocket Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+  </head>
+  <body>
+    <h2>Ready Check Test</h2>
+    <button onclick="sendReadyCheck()">Toggle Ready</button>
+    <pre id="log"></pre>
+
+    <script>
+      let stompClient;
+
+      window.addEventListener("load", function () {
+        const socket = new SockJS("http://localhost:8080/ws");
+        stompClient = StompJs.Stomp.over(socket); // ✅ Use StompJs.Stomp
+
+        stompClient.connect({}, function () {
+          console.log("Connected to STOMP");
+
+          stompClient.subscribe("/readycheck", function (message) {
+            const body = JSON.parse(message.body);
+            document.getElementById("log").textContent += `\n${
+              body.playerId
+            } is ${body.isReady ? "READY" : "NOT READY"}`;
+          });
+        });
+      });
+
+      function sendReadyCheck() {
+        if (!stompClient || !stompClient.connected) {
+          alert("STOMP client not connected yet.");
+          return;
+        }
+
+        const message = {
+          playerName: "player123",
+          lobbyCode: "lobbyA",
+          isReady: true,
+        };
+
+        stompClient.send("/app/game/lobbyA", {}, JSON.stringify(message));
+      }
+    </script>
+  </body>
+</html>
