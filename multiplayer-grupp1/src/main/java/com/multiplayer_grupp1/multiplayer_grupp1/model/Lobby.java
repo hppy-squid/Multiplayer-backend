@@ -11,8 +11,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-
-
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,6 +22,7 @@ public class Lobby {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Tror denna kan vara lämpad för att göra test på 
     private String lobbyCode = RandomStringUtils.randomAlphanumeric(6).toUpperCase();
 
     @OneToMany(mappedBy = "lobby", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
