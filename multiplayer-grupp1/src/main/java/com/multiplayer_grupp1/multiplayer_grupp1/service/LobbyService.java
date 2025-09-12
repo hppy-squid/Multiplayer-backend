@@ -96,10 +96,9 @@ public class LobbyService {
         // Hittar spelaren baserat på dess ID, kastar en exception om den inte hittas
         Player player = playerRepository.findById(playerId).orElseThrow(() -> new PlayerNotFoundException("Player not found"));
         // Hittar lobbyn baserat på dess kod, kastar en exception om den inte hittas
-        Lobby lobby = lobbyRepository.findByLobbyCode(lobbyCode);
-        if (lobby == null) {
-            throw new LobbyNotFoundException("Lobby not found");
-        }
+        Lobby lobby = lobbyRepository.findByLobbyCode(lobbyCode)
+                .orElseThrow(() -> new LobbyNotFoundException("Lobby not found"));
+
         // Kollar om lobbyn är full (max 4 spelare), kastar en exception om den är det
         if (lobby.getPlayers().size() >= 4) {
             throw new LobbyIsFullException("Lobby is full");
