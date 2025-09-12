@@ -29,6 +29,9 @@ public class Lobby {
     @OneToMany(mappedBy = "lobby", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Player> players = new ArrayList<>(4);
 
+    @OneToOne(mappedBy = "lobby", cascade = CascadeType.ALL)
+    private Game game;
+
     @Enumerated(EnumType.STRING)
     private GameState gameState;
 
