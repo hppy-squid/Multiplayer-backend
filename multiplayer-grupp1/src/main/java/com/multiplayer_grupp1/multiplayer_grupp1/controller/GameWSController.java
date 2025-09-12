@@ -6,6 +6,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 import com.multiplayer_grupp1.multiplayer_grupp1.model.Ready;
+import com.multiplayer_grupp1.multiplayer_grupp1.model.Response;
 import com.multiplayer_grupp1.multiplayer_grupp1.service.GameService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,9 +27,14 @@ public class GameWSController {
     }
 
 
-    /* // Mapping för att skicka att användare har svarat på frågan 
+    // Mapping för att skicka att användare har svarat på frågan 
     @MessageMapping("/game/{lobbyCode}")
-    @SendTo("/response") */
+    @SendTo("/response")
+    public Response handleResponse(@DestinationVariable String lobbyCode, Response response){
+        gameService.responded(response);
+        System.out.println(response.getPlayerName());
+        return response;
+    }
 
     /* // Mapping för att uppdatera tiden 
     @MessageMapping("/game/{lobbyCode}")

@@ -9,15 +9,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Ready {
-
-    // Spelarens namn
+public class Response {
+    
     private String playerName; 
-    
-    // Lobbykoden så vi skickar information i rätt lobby 
-    private String lobbyCode; 
-    
-    // Defaultar boolean för isReady till false och togglear när användare skickar infon 
-    private boolean isReady; 
 
+    private String lobbyCode; 
+
+    private boolean hasResponded; 
 }
