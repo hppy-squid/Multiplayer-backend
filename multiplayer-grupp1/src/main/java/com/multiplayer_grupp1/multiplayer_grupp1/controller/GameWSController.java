@@ -18,7 +18,7 @@ public class GameWSController {
     private final GameService gameService;
 
     // Mapping för att skicka att användare är redo i lobbyn
-    @MessageMapping("/game/{lobbyCode}")
+    @MessageMapping("/game/{lobbyCode}/ready")
     @SendTo("/readycheck") 
     public Ready handleReady(@DestinationVariable String lobbyCode, Ready readyMsg){
         gameService.toggleReady(readyMsg);
@@ -28,7 +28,7 @@ public class GameWSController {
 
 
     // Mapping för att skicka att användare har svarat på frågan 
-    @MessageMapping("/game/{lobbyCode}")
+    @MessageMapping("/game/{lobbyCode}/response")
     @SendTo("/response")
     public Response handleResponse(@DestinationVariable String lobbyCode, Response response){
         gameService.responded(response);

@@ -1,27 +1,33 @@
 package com.multiplayer_grupp1.multiplayer_grupp1.model;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.List;
 
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
-@RequiredArgsConstructor
 public class Game {
 
-    private final String lobbyCode;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private final List<Question> questions;
 
-    private int index = -1;
+    @OneToOne
+    @JoinColumn(name = "lobby_id")
+    private Lobby lobby;
 
-    private Question currentQuestion;
+    @Enumerated(EnumType.STRING)
+    private GameState gameState;
 
-    // Håller koll på vilka frågor som tagits tidigare, måste kontrolleras mot när vi hämtar frågor 
-    private List<String> previousQuestionIds; 
+    private static final int maxQuestions = 5;
+
+    private int currentQuestionNumber = 0;
+
+    private Long currentQuestionId;
 
 }

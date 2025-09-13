@@ -1,8 +1,13 @@
 /* Måste droppa tables i denna ordningen för att det ska fungera korrekt, detta för att undvika att man skapar mer 
 och mer data varje gång programmet startas, 
 är ok att göra för tabeller man reseedar, men tabeller som vi lägger in data i får ej göras så med */
-DROP TABLE IF EXISTS question_options; 
+DROP TABLE IF EXISTS player_answer;
+DROP TABLE IF EXISTS player;
+DROP TABLE IF EXISTS game;
+DROP TABLE IF EXISTS lobby;
+DROP TABLE IF EXISTS question_options;
 DROP TABLE IF EXISTS question;
+
 
 /* Skapar tabell för question om den inte finns */
 CREATE TABLE IF NOT EXISTS question (
