@@ -12,6 +12,7 @@ import com.multiplayer_grupp1.multiplayer_grupp1.model.Player;
 import com.multiplayer_grupp1.multiplayer_grupp1.repository.LobbyRepository;
 import com.multiplayer_grupp1.multiplayer_grupp1.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,7 @@ public class LobbyService {
     private final PlayerService playerService;
     private final LobbyRepository lobbyRepository;
     private final PlayerRepository playerRepository;
-
+    private final SimpMessagingTemplate messagingTemplate;   // WS-broadcast till klienterna
 
     // Konvertera mellan entity och DTO
     public LobbyDTO convertToDTO(Lobby lobby) {
@@ -41,31 +42,26 @@ public class LobbyService {
 
         // Returnerar en ny LobbyDTO
         return new LobbyDTO(
-            lobby.getId(), 
-            lobby.getLobbyCode(), 
-            playerDTOS,
-            lobby.getGameState()
-            );
+                lobby.getId(),
+                lobby.getLobbyCode(),
+                playerDTOS,
+                lobby.getGameState()
+                );
 
     }
 
-    // Konvertera från DTO till entity
-    public Lobby convertToEntity(LobbyDTO lobbyDTO) {
-        Lobby lobby = new Lobby();
-        lobby.setId(lobbyDTO.id());
-        lobby.setLobbyCode(lobbyDTO.lobbyCode());
-        lobby.setPlayers(lobbyDTO.players().stream()
-                .map(playerService::convertToEntity)
-                .toList());
-        lobby.setGameState(lobbyDTO.gameState());
-        return lobby;
+    // Hjälpmetod: skicka snapshot till alla klienter i lobbyn
+    private void broadcastLobby(Lobby lobby) {     
+        messagingTemplate.convertAndSend("/lobby/" + lobby.getLobbyCode(), convertToDTO(lobby));
     }
 
-    public LobbyDTO findLobbyById(Long id) {
-        Lobby lobby = lobbyRepository.findById(id).orElseThrow(() -> new LobbyNotFoundException("Lobby with id " + id + " not found"));
-        return convertToDTO(lobby);
+    // Hjälpmetod när lobbyn blivit borttagen
+    private void broadcastLobbyDeleted(String lobbyCode) {     
+        messagingTemplate.convertAndSend("/lobby/" + lobbyCode,
+                new LobbyDTO(null, lobbyCode, List.of(), GameState.WAITING));
     }
 
+    @Transactional
     // Skapa en ny lobby och sätter spelaren som host
     public LobbyDTO createLobby(Long playerId) {
         Lobby lobby = new Lobby();
@@ -75,16 +71,15 @@ public class LobbyService {
 
         // Hämta spelaren från databasen. Om spelaren inte finns, kasta en exception
         Player player = playerRepository.findPlayerById(playerId);
-        if (player == null) {
+        if (player == null)
             throw new PlayerNotFoundException("Player with id " + playerId + " not found");
-        }
-        // Kollar om spelaren redan är i en lobby, om så är fallet kasta en exception
-        if (player.getLobby() != null) {
+        if (player.getLobby() != null){
             throw new PlayerIsAlreadyInLobbyException("Player is already in a lobby");
         }
         // Sätter spelaren som en host och lägger till spelaren i lobbyn
         player.setHost(true);
         player.setLobby(lobby);
+        player.setReady(false);
 
         // Lägger till spelaren i lobbyns lista av spelare
         lobby.getPlayers().add(player);
@@ -93,11 +88,13 @@ public class LobbyService {
         playerRepository.save(player);
         lobbyRepository.save(lobby);
 
+        // Broadcast snapshot
+        broadcastLobby(lobby);
 
-        // Konvertera lobbyn till en DTO och returnerar den
         return convertToDTO(lobby);
     }
 
+    @Transactional
     public LobbyDTO addPlayerToLobby(String lobbyCode, Long playerId) {
         // Hittar spelaren baserat på dess ID, kastar en exception om den inte hittas
         Player player = playerRepository.findById(playerId).orElseThrow(() -> new PlayerNotFoundException("Player not found"));
@@ -116,8 +113,12 @@ public class LobbyService {
         // Lägger till spelaren i lobbyn och sparar ändringarna i databasen
         lobby.getPlayers().add(player);
         player.setLobby(lobby);
+        player.setReady(false);
         playerRepository.save(player);
         lobbyRepository.save(lobby);
+
+        // Broadcast snapshot
+        broadcastLobby(lobby);
 
         return convertToDTO(lobby);
     }
@@ -144,12 +145,14 @@ public class LobbyService {
         lobby.getPlayers().remove(player);
         player.setLobby(null);
         player.setHost(false);
+        player.setReady(false);
         playerRepository.save(player);
 
         // 4) Om lobbyn blev tom: radera den (eller markera som inaktiv)
         if (lobby.getPlayers().isEmpty()) {
             lobbyRepository.delete(lobby);
             // Returnera en "tom" DTO
+            broadcastLobbyDeleted(lobbyCode);
             return new LobbyDTO(null, lobbyCode, List.of(), GameState.WAITING);
         }
 
@@ -160,6 +163,27 @@ public class LobbyService {
 
         // 6) Spara lobby och returnera uppdaterad DTO
         lobbyRepository.save(lobby);
+
+        // Broadcast snapshot
+        broadcastLobby(lobby);
+
+        return convertToDTO(lobby);
+    }
+
+    @Transactional
+    public LobbyDTO setReadyAndBroadcast(String code, Long playerId, boolean ready) {
+        var lobby = lobbyRepository.findByLobbyCode(code)
+                .orElseThrow(() -> new LobbyNotFoundException("Lobby not found"));
+        var player = playerRepository.findById(playerId)
+                .orElseThrow(() -> new PlayerNotFoundException("Player not found"));
+
+        if (player.getLobby() == null || !player.getLobby().getId().equals(lobby.getId()))
+            throw new PlayerNotFoundException("Player is not in this lobby");
+
+        player.setReady(ready);
+        playerRepository.saveAndFlush(player);   // skriv ut direkt så det syns i DB på en gång
+
+        messagingTemplate.convertAndSend("/lobby/" + code, convertToDTO(lobby));
         return convertToDTO(lobby);
     }
 }

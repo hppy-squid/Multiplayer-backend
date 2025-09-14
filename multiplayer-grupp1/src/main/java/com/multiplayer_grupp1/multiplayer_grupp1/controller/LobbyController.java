@@ -47,8 +47,8 @@ public class LobbyController {
         return dto;
     }
 
-    @GetMapping("/find/{lobbyId}")
-    public LobbyDTO findLobbyById(@PathVariable Long lobbyId) {
-        return lobbyService.findLobbyById(lobbyId);
-    }
+    // @GetMapping("/find/{lobbyId}")
+    // public LobbyDTO findLobbyById(@PathVariable Long lobbyId) {
+    //     return lobbyService.findLobbyById(lobbyId);
+    // }
 }
