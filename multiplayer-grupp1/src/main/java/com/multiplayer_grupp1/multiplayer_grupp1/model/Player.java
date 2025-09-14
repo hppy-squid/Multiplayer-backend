@@ -20,6 +20,9 @@ public class Player {
 
     private boolean isHost = false;
 
+    @Column(name = "is_ready", nullable = false)
+    private boolean isReady = false;
+
     @ManyToOne
     @JoinColumn(name = "lobby_id")
     private Lobby lobby;

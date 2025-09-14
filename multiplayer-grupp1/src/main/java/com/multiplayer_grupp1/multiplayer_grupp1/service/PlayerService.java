@@ -35,7 +35,9 @@ public class PlayerService {
                 player.getId(),
                 player.getPlayerName(),
                 player.getScore(),
-                player.isHost());
+                player.isHost(),
+                player.isReady());
+
     }
 
     // Skapar en ny spelare

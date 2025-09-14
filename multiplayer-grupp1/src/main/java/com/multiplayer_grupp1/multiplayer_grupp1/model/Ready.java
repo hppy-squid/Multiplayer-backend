@@ -1,5 +1,7 @@
 package com.multiplayer_grupp1.multiplayer_grupp1.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +13,8 @@ import lombok.Setter;
 @Setter
 public class Ready {
 
+    private Long playerId;
+
     // Spelarens namn
     private String playerName; 
     
@@ -18,6 +22,7 @@ public class Ready {
     private String lobbyCode; 
     
     // Defaultar boolean för isReady till false och togglear när användare skickar infon 
-    private boolean isReady; 
+    @JsonProperty("ready")       // klienten skickar 'ready'
+    private boolean ready;       
 
 }
