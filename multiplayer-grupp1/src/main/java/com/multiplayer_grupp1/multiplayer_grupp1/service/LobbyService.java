@@ -51,12 +51,12 @@ public class LobbyService {
     }
 
     // Hjälpmetod: skicka snapshot till alla klienter i lobbyn
-    private void broadcastLobby(Lobby lobby) {     
+    private void broadcastLobby(Lobby lobby) {
         messagingTemplate.convertAndSend("/lobby/" + lobby.getLobbyCode(), convertToDTO(lobby));
     }
 
     // Hjälpmetod när lobbyn blivit borttagen
-    private void broadcastLobbyDeleted(String lobbyCode) {     
+    private void broadcastLobbyDeleted(String lobbyCode) {
         messagingTemplate.convertAndSend("/lobby/" + lobbyCode,
                 new LobbyDTO(null, lobbyCode, List.of(), GameState.WAITING));
     }
@@ -181,10 +181,32 @@ public class LobbyService {
             throw new PlayerNotFoundException("Player is not in this lobby");
 
         player.setReady(ready);
-        playerRepository.saveAndFlush(player);   // skriv ut direkt så det syns i DB på en gång
+        playerRepository.saveAndFlush(player); // skriv ut direkt så det syns i DB på en gång
+
+        // Sätt state och broadcasta snapshot
+        messagingTemplate.convertAndSend("/lobby/" + code, convertToDTO(lobby));
+        return convertToDTO(lobby);
+    }
+
+    // Metod som startar spelet och broadcastar snapshot
+    @Transactional
+    public LobbyDTO startGameAndBroadcast(String code, Long playerId) {
+        var lobby = lobbyRepository.findByLobbyCode(code)
+                .orElseThrow(() -> new LobbyNotFoundException("Lobby not found"));
+        var player = playerRepository.findById(playerId)
+                .orElseThrow(() -> new PlayerNotFoundException("Player not found"));
+
+        // Måste vara host för att starta
+        if (player.getLobby() == null || !player.getLobby().getId().equals(lobby.getId()))
+            throw new PlayerNotFoundException("Player is not in this lobby");
+        if (!Boolean.TRUE.equals(player.isHost()))
+            throw new IllegalStateException("Only host can start the game");
+
+        // Sätt state och broadcasta snapshot
+        lobby.setGameState(GameState.IN_GAME);
+        lobbyRepository.save(lobby);
 
         messagingTemplate.convertAndSend("/lobby/" + code, convertToDTO(lobby));
         return convertToDTO(lobby);
     }
 }
-
