@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 
 import com.multiplayer_grupp1.multiplayer_grupp1.model.Ready;
 import com.multiplayer_grupp1.multiplayer_grupp1.model.Response;
+import com.multiplayer_grupp1.multiplayer_grupp1.model.StartGame;
 import com.multiplayer_grupp1.multiplayer_grupp1.service.GameService;
 import com.multiplayer_grupp1.multiplayer_grupp1.service.LobbyService;
 
@@ -30,12 +31,11 @@ public class GameWSController {
     // Klient publishar till: /app/game/{lobbyCode}/ready
     // Vi broadcastar till:   /readycheck/{lobbyCode}
     @MessageMapping("/game/{lobbyCode}/ready")
-public void handleReady(@DestinationVariable String lobbyCode, Ready readyMsg){
-    System.out.printf("READY msg: code=%s id=%s ready=%s%n",
-        lobbyCode, readyMsg.getPlayerId(), readyMsg.isReady()); 
-    lobbyService.setReadyAndBroadcast(lobbyCode, readyMsg.getPlayerId(), readyMsg.isReady());
-}
-
+    public void handleReady(@DestinationVariable String lobbyCode, Ready readyMsg){
+        System.out.printf("READY msg: code=%s id=%s ready=%s%n",
+                lobbyCode, readyMsg.getPlayerId(), readyMsg.isReady());
+        lobbyService.setReadyAndBroadcast(lobbyCode, readyMsg.getPlayerId(), readyMsg.isReady());
+    }
 
     // Mapping för att skicka att användare har svarat på frågan
     // Klient publishar till: /app/game/{lobbyCode}/response
@@ -47,7 +47,16 @@ public void handleReady(@DestinationVariable String lobbyCode, Ready readyMsg){
         messagingTemplate.convertAndSend("/response/" + lobbyCode, response);
     }
 
-    /* // Mapping för att uppdatera tiden 
-    @MessageMapping("/game/{lobbyCode}")
-    @SendTo("/timer") */
+    @MessageMapping("/game/{lobbyCode}/start") // klient publish: /app/game/{code}/start
+    public void handleStart(@DestinationVariable String lobbyCode, StartGame msg) {
+        lobbyService.startGameAndBroadcast(lobbyCode, msg.getPlayerId());
+    }
+
+    /*
+     // Mapping för att uppdatera tiden
+     * 
+     * @MessageMapping("/game/{lobbyCode}")
+     * 
+     * @SendTo("/timer")
+     */
 }
