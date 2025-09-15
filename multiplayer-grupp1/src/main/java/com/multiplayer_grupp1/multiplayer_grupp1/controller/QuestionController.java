@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.multiplayer_grupp1.multiplayer_grupp1.Dto.AnswerDTO;
 import com.multiplayer_grupp1.multiplayer_grupp1.Dto.QuestionDTO;
-import com.multiplayer_grupp1.multiplayer_grupp1.model.Question;
+// import com.multiplayer_grupp1.multiplayer_grupp1.model.Question;
 import com.multiplayer_grupp1.multiplayer_grupp1.service.QuestionService;
 
 import lombok.RequiredArgsConstructor;
