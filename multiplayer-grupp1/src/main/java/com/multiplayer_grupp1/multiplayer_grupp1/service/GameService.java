@@ -7,10 +7,8 @@ import java.util.Optional;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import com.multiplayer_grupp1.multiplayer_grupp1.model.Ready;
-import com.multiplayer_grupp1.multiplayer_grupp1.model.Response;
-
 import com.multiplayer_grupp1.multiplayer_grupp1.Dto.QuestionDTO;
+import com.multiplayer_grupp1.multiplayer_grupp1.Exceptions.GameIsNotFinishedException;
 import com.multiplayer_grupp1.multiplayer_grupp1.Exceptions.GameNotFoundException;
 import com.multiplayer_grupp1.multiplayer_grupp1.Exceptions.InsufficentPlayerException;
 import com.multiplayer_grupp1.multiplayer_grupp1.Exceptions.LobbyNotFoundException;
@@ -23,6 +21,8 @@ import com.multiplayer_grupp1.multiplayer_grupp1.model.Lobby;
 import com.multiplayer_grupp1.multiplayer_grupp1.model.Player;
 import com.multiplayer_grupp1.multiplayer_grupp1.model.PlayerAnswer;
 import com.multiplayer_grupp1.multiplayer_grupp1.model.Question;
+import com.multiplayer_grupp1.multiplayer_grupp1.model.Ready;
+import com.multiplayer_grupp1.multiplayer_grupp1.model.Response;
 import com.multiplayer_grupp1.multiplayer_grupp1.repository.GameRepository;
 import com.multiplayer_grupp1.multiplayer_grupp1.repository.LobbyRepository;
 import com.multiplayer_grupp1.multiplayer_grupp1.repository.PlayerAnswerRepository;
@@ -34,6 +34,14 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class GameService {
+
+    private final GameRepository gameRepository;
+    private final LobbyRepository lobbyRepository;
+    private final QuestionRepository questionRepository;
+    private final PlayerAnswerRepository playerAnswerRepository;
+    private final PlayerRepository playerRepository;
+    private final QuestionService questionService;
+    private final SimpMessagingTemplate messagingTemplate;
 
 
     public Ready toggleReady(Ready readyMsg) {
@@ -47,16 +55,6 @@ public class GameService {
         response.setHasResponded(!response.isHasResponded());
         return response;
     }
-
-
-    private final GameRepository gameRepository;
-    private final LobbyRepository lobbyRepository;
-    private final QuestionRepository questionRepository;
-    private final PlayerAnswerRepository playerAnswerRepository;
-    private final PlayerRepository playerRepository;
-    private final QuestionService questionService;
-    private final SimpMessagingTemplate messagingTemplate;
-
 
     // En metod för att kontrollera om en spelare redan har svarat på en fråga
     private boolean hasPlayerAnswered(Long gameId, Long playerId, Long questionId) {
@@ -174,9 +172,10 @@ public class GameService {
             calculateAndDistributePoints(game, currentQuestion.getQuestionId());
             gameRepository.save(game);
 
-            game.setGameState(GameState.IN_PROGRESS);
-            gameRepository.save(game);
-
+            if (game.getGameState() != GameState.FINISHED) {
+                game.setGameState(GameState.IN_PROGRESS);
+                gameRepository.save(game);
+            }
             sendResults(gameId, questionId);
         }
         playerAnswerRepository.save(playerAnswer);
@@ -200,16 +199,15 @@ public class GameService {
             } else {
                 answer.setPointsEarned(0);
             }
-
-            if (game.getCurrentQuestionNumber() >= 5) {
-                long lobbyId = game.getLobby().getId();
-                endGame(lobbyId);
-            } else {
-                game.setGameState(GameState.IN_PROGRESS);
-            }
-
             playerAnswerRepository.save(answer);
         }
+        if (game.getCurrentQuestionNumber() >= 5) {
+            long lobbyId = game.getLobby().getId();
+            endGame(lobbyId);
+        } else {
+            game.setGameState(GameState.IN_PROGRESS);
+        }
+
     }
 
     public void nextQuestion(Long gameId, Long questionId) {
@@ -217,7 +215,7 @@ public class GameService {
                 .orElseThrow(() -> new GameNotFoundException("Lobby not found"));
 
         if (game.getGameState() != GameState.FINISHED) {
-            throw new IllegalStateException("Cannot move to next question yet");
+            throw new GameIsNotFinishedException("Cannot move to next question yet");
         }
 
         if (game.getCurrentQuestionNumber() >= 5) {
