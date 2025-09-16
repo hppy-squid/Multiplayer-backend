@@ -10,6 +10,7 @@ import com.multiplayer_grupp1.multiplayer_grupp1.Exceptions.PlayerNotFoundExcept
 import com.multiplayer_grupp1.multiplayer_grupp1.model.GameState;
 import com.multiplayer_grupp1.multiplayer_grupp1.model.Lobby;
 import com.multiplayer_grupp1.multiplayer_grupp1.model.Player;
+import com.multiplayer_grupp1.multiplayer_grupp1.model.RoundState; // <-- viktigt: modellens RoundState
 import com.multiplayer_grupp1.multiplayer_grupp1.repository.LobbyRepository;
 import com.multiplayer_grupp1.multiplayer_grupp1.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +62,8 @@ public class LobbyService {
      * /lobby/{code}.
      */
     private LobbySnapshotDTO buildSnapshot(Lobby lobby) {
+        RoundState r = gameService.getRoundForLobby(lobby.getLobbyCode()); // <-- istället för rounds.get(...)
+
         var playersWire = (lobby.getPlayers() == null ? List.<Player>of() : lobby.getPlayers())
                 .stream()
                 .map(p -> new LobbySnapshotDTO.PlayerWire(
@@ -68,21 +71,20 @@ public class LobbyService {
                         p.getPlayerName(),
                         Boolean.TRUE.equals(p.isHost()),
                         Boolean.TRUE.equals(p.isReady()),
-                        p.getScore()))
+                        p.getScore(),
+                        r != null && r.hasAnswered(p.getId().intValue()),
+                        r != null ? r.getCorrectness(p.getId().intValue()) : null))
                 .toList();
 
-        // Hämta round från GameService (kan vara null om inget spel pågår)
-        var r = gameService.getRoundForLobby(lobby.getLobbyCode());
         LobbySnapshotDTO.RoundDTO roundDTO = null;
         if (r != null) {
             roundDTO = new LobbySnapshotDTO.RoundDTO(
                     r.getQuestionId(),
                     r.getIndex(),
                     r.getTotal(),
-                    r.getPhase().name().toLowerCase(), // "question" | "answer"
+                    r.getPhase().name().toLowerCase(),
                     r.getEndsAtEpochMillis(),
-                    r.getAnsweredCount() // kan vara null
-            );
+                    r.getAnsweredCount());
         }
 
         return new LobbySnapshotDTO(
@@ -95,21 +97,18 @@ public class LobbyService {
 
     /** Publik hjälpare som GameService kan kalla. */
     public void broadcastSnapshotByCode(String lobbyCode) {
-    lobbyRepository.findByLobbyCode(lobbyCode)
-        .ifPresentOrElse(
-            lobby -> messagingTemplate.convertAndSend("/lobby/" + lobbyCode, buildSnapshot(lobby)),
-            () -> {
-                // Skicka en tom/neutral snapshot så klienter kan “landa” utan exception
-                var empty = new LobbySnapshotDTO(
-                    lobbyCode,
-                    GameState.WAITING.name(),
-                    List.of(),
-                    null
-                );
-                messagingTemplate.convertAndSend("/lobby/" + lobbyCode, empty);
-            }
-        );
-}
+        lobbyRepository.findByLobbyCode(lobbyCode).ifPresentOrElse(
+                lobby -> messagingTemplate.convertAndSend("/lobby/" + lobbyCode, buildSnapshot(lobby)),
+                () -> {
+                    // Skicka en neutral snapshot om lobbyn saknas (så klienter inte kraschar)
+                    var empty = new LobbySnapshotDTO(
+                            lobbyCode,
+                            GameState.WAITING.name(),
+                            List.of(),
+                            null);
+                    messagingTemplate.convertAndSend("/lobby/" + lobbyCode, empty);
+                });
+    }
 
     /** Om lobbyn raderas eller är tom – skicka tom snapshot (utan round). */
     private void broadcastLobbyDeleted(String lobbyCode) {
@@ -136,10 +135,9 @@ public class LobbyService {
         Player player = playerRepository.findPlayerById(playerId);
         if (player == null)
             throw new PlayerNotFoundException("Player with id " + playerId + " not found");
-        if (player.getLobby() != null){
+        if (player.getLobby() != null)
             throw new PlayerIsAlreadyInLobbyException("Player is already in a lobby");
-        }
-        // Sätter spelaren som en host och lägger till spelaren i lobbyn
+
         player.setHost(true);
         player.setLobby(lobby);
         player.setReady(false);

@@ -25,6 +25,8 @@ public class LobbySnapshotDTO {
         private boolean isHost;
         private boolean ready;
         private int score;
+        private boolean answered;
+        private Boolean correct;
     }
 
     @Data
