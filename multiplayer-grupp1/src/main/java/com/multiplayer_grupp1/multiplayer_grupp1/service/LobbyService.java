@@ -295,7 +295,7 @@ public class LobbyService {
         lobbyRepository.save(lobby);
 
         // 1) Initiera första rundan (läggs i GameService.in-memory map)
-        gameService.startFirstRound(lobby.getLobbyCode(), /* total */ 5, /* questionSec */ 15, /* answerSec */ 10);
+        gameService.startFirstRound(lobby.getLobbyCode(), /* total */ 5, /* questionSec */ 15, /* answerSec */ 5);
 
         // 2) Bygg snapshot och skicka DIREKT
         LobbySnapshotDTO snap = buildSnapshot(lobby);
