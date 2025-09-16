@@ -3,14 +3,14 @@ package com.multiplayer_grupp1.multiplayer_grupp1.controller;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 // import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+// import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import com.multiplayer_grupp1.multiplayer_grupp1.model.Ready;
-import com.multiplayer_grupp1.multiplayer_grupp1.model.Response;
 import com.multiplayer_grupp1.multiplayer_grupp1.model.StartGame;
 import com.multiplayer_grupp1.multiplayer_grupp1.service.GameService;
 import com.multiplayer_grupp1.multiplayer_grupp1.service.LobbyService;
+import com.multiplayer_grupp1.multiplayer_grupp1.Dto.AnswerMessage;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class GameWSController {
 
     private final GameService gameService;
-    private final SimpMessagingTemplate messagingTemplate;
+    // private final SimpMessagingTemplate messagingTemplate;
     private final LobbyService lobbyService;
 
     // Mapping för att skicka att användare är redo i lobbyn
@@ -38,17 +38,16 @@ public class GameWSController {
     }
 
     // Mapping för att skicka att användare har svarat på frågan
-    // Klient publishar till: /app/game/{lobbyCode}/response
-    // Vi broadcastar till:   /response/{lobbyCode}
-    @MessageMapping("/game/{lobbyCode}/response")
-    public void handleResponse(@DestinationVariable String lobbyCode, Response response){
-        gameService.responded(response);
-        System.out.println(response.getPlayerName());
-        messagingTemplate.convertAndSend("/response/" + lobbyCode, response);
+    // Klient publishar till: /app/game/{lobbyCode}/answer
+    // Vi broadcastar till: /lobby/{lobbyCode}
+    @MessageMapping("/game/{lobbyCode}/answer")
+    public void handleAnswer(@DestinationVariable String lobbyCode,AnswerMessage payload) {
+        gameService.handleAnswer(lobbyCode, payload);
     }
 
-    @MessageMapping("/game/{lobbyCode}/start") // klient publish: /app/game/{code}/start
+    @MessageMapping("/game/{lobbyCode}/start")
     public void handleStart(@DestinationVariable String lobbyCode, StartGame msg) {
+        System.out.println("WS START for lobby=" + lobbyCode + " playerId=" + msg.getPlayerId());
         lobbyService.startGameAndBroadcast(lobbyCode, msg.getPlayerId());
     }
 
@@ -59,4 +58,9 @@ public class GameWSController {
      * 
      * @SendTo("/timer")
      */
+
+    @MessageMapping("/lobby/{lobbyCode}/resync")
+    public void handleResync(@DestinationVariable String lobbyCode) {
+        lobbyService.broadcastSnapshotByCode(lobbyCode);
+    }
 }

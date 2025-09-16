@@ -2,6 +2,7 @@ package com.multiplayer_grupp1.multiplayer_grupp1.controller;
 
 import com.multiplayer_grupp1.multiplayer_grupp1.Dto.LobbyDTO;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,6 +46,12 @@ public class LobbyController {
         // 🔔 tala om för alla i lobbyn att players-listan ändrats
         messagingTemplate.convertAndSend("/lobby/" + lobbyCode, dto);
         return dto;
+    }
+
+     @PostMapping("/{lobbyCode}/ready/reset")
+    public ResponseEntity<Void> resetReady(@PathVariable String lobbyCode) {
+        lobbyService.resetReadyAndBroadcast(lobbyCode);
+        return ResponseEntity.ok().build();
     }
 
     // @GetMapping("/find/{lobbyId}")

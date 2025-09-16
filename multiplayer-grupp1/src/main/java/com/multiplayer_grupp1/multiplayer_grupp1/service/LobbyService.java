@@ -1,6 +1,7 @@
 package com.multiplayer_grupp1.multiplayer_grupp1.service;
 
 import com.multiplayer_grupp1.multiplayer_grupp1.Dto.LobbyDTO;
+import com.multiplayer_grupp1.multiplayer_grupp1.Dto.LobbySnapshotDTO;
 import com.multiplayer_grupp1.multiplayer_grupp1.Dto.PlayerDTO;
 import com.multiplayer_grupp1.multiplayer_grupp1.Exceptions.LobbyIsFullException;
 import com.multiplayer_grupp1.multiplayer_grupp1.Exceptions.LobbyNotFoundException;
@@ -30,7 +31,10 @@ public class LobbyService {
     private final PlayerService playerService;
     private final LobbyRepository lobbyRepository;
     private final PlayerRepository playerRepository;
-    private final SimpMessagingTemplate messagingTemplate;   // WS-broadcast till klienterna
+    private final SimpMessagingTemplate messagingTemplate;
+
+    // Behövs för att hämta/initialisera aktuell runda
+    private final GameService gameService;
 
     // Konvertera mellan entity och DTO
     public LobbyDTO convertToDTO(Lobby lobby) {
@@ -50,17 +54,76 @@ public class LobbyService {
 
     }
 
-    // Hjälpmetod: skicka snapshot till alla klienter i lobbyn
-    private void broadcastLobby(Lobby lobby) {
-        messagingTemplate.convertAndSend("/lobby/" + lobby.getLobbyCode(), convertToDTO(lobby));
+    // ---- Snapshot-bygge + broadcast ----
+
+    /**
+     * Bygger snapshot (players + gameState + round) som frontend lyssnar på via
+     * /lobby/{code}.
+     */
+    private LobbySnapshotDTO buildSnapshot(Lobby lobby) {
+        var playersWire = (lobby.getPlayers() == null ? List.<Player>of() : lobby.getPlayers())
+                .stream()
+                .map(p -> new LobbySnapshotDTO.PlayerWire(
+                        p.getId(),
+                        p.getPlayerName(),
+                        Boolean.TRUE.equals(p.isHost()),
+                        Boolean.TRUE.equals(p.isReady()),
+                        p.getScore()))
+                .toList();
+
+        // Hämta round från GameService (kan vara null om inget spel pågår)
+        var r = gameService.getRoundForLobby(lobby.getLobbyCode());
+        LobbySnapshotDTO.RoundDTO roundDTO = null;
+        if (r != null) {
+            roundDTO = new LobbySnapshotDTO.RoundDTO(
+                    r.getQuestionId(),
+                    r.getIndex(),
+                    r.getTotal(),
+                    r.getPhase().name().toLowerCase(), // "question" | "answer"
+                    r.getEndsAtEpochMillis(),
+                    r.getAnsweredCount() // kan vara null
+            );
+        }
+
+        return new LobbySnapshotDTO(
+                lobby.getLobbyCode(),
+                lobby.getGameState().name(), // "WAITING" | "IN_GAME" | "FINISHED"
+                playersWire,
+                roundDTO);
     }
 
-    // Hjälpmetod när lobbyn blivit borttagen
+
+    /** Publik hjälpare som GameService kan kalla. */
+    public void broadcastSnapshotByCode(String lobbyCode) {
+    lobbyRepository.findByLobbyCode(lobbyCode)
+        .ifPresentOrElse(
+            lobby -> messagingTemplate.convertAndSend("/lobby/" + lobbyCode, buildSnapshot(lobby)),
+            () -> {
+                // Skicka en tom/neutral snapshot så klienter kan “landa” utan exception
+                var empty = new LobbySnapshotDTO(
+                    lobbyCode,
+                    GameState.WAITING.name(),
+                    List.of(),
+                    null
+                );
+                messagingTemplate.convertAndSend("/lobby/" + lobbyCode, empty);
+            }
+        );
+}
+
+    /** Om lobbyn raderas eller är tom – skicka tom snapshot (utan round). */
     private void broadcastLobbyDeleted(String lobbyCode) {
-        messagingTemplate.convertAndSend("/lobby/" + lobbyCode,
-                new LobbyDTO(null, lobbyCode, List.of(), GameState.WAITING));
+        var empty = new LobbySnapshotDTO(
+                lobbyCode,
+                GameState.WAITING.name(),
+                List.of(),
+                null);
+        messagingTemplate.convertAndSend("/lobby/" + lobbyCode, empty);
     }
 
+    // ---- Publika flöden ----
+
+    /** Skapar en lobby och sätter given spelare som host. */
     @Transactional
     // Skapa en ny lobby och sätter spelaren som host
     public LobbyDTO createLobby(Long playerId) {
@@ -89,28 +152,25 @@ public class LobbyService {
         lobbyRepository.save(lobby);
 
         // Broadcast snapshot
-        broadcastLobby(lobby);
-
+        broadcastSnapshotByCode(lobby.getLobbyCode());
+        
         return convertToDTO(lobby);
     }
 
+    /** Lägger in spelare i befintlig lobby. */
     @Transactional
     public LobbyDTO addPlayerToLobby(String lobbyCode, Long playerId) {
-        // Hittar spelaren baserat på dess ID, kastar en exception om den inte hittas
-        Player player = playerRepository.findById(playerId).orElseThrow(() -> new PlayerNotFoundException("Player not found"));
-        // Hittar lobbyn baserat på dess kod, kastar en exception om den inte hittas
+        Player player = playerRepository.findById(playerId)
+                .orElseThrow(() -> new PlayerNotFoundException("Player not found"));
+
         Lobby lobby = lobbyRepository.findByLobbyCode(lobbyCode)
                 .orElseThrow(() -> new LobbyNotFoundException("Lobby not found"));
 
-        // Kollar om lobbyn är full (max 4 spelare), kastar en exception om den är det
-        if (lobby.getPlayers().size() >= 4) {
+        if (lobby.getPlayers().size() >= 4)
             throw new LobbyIsFullException("Lobby is full");
-        }
-        // Kollar om spelaren redan är i en lobby, kastar en exception om den är det
-        if(player.getLobby() != null) {
+        if (player.getLobby() != null)
             throw new PlayerIsAlreadyInLobbyException("Player is already in a lobby");
-        }
-        // Lägger till spelaren i lobbyn och sparar ändringarna i databasen
+
         lobby.getPlayers().add(player);
         player.setLobby(lobby);
         player.setReady(false);
@@ -118,13 +178,12 @@ public class LobbyService {
         lobbyRepository.save(lobby);
 
         // Broadcast snapshot
-        broadcastLobby(lobby);
-
+        broadcastSnapshotByCode(lobbyCode);
+        
         return convertToDTO(lobby);
     }
 
-    // @Transactional gör att alla databasanrop i metoden körs som en helhet.
-    // Om något går fel mitt i, rullas allt tillbaka så att databasen inte blir halvuppdaterad.
+    /** Tar bort spelare från lobby. Raderar lobby om den blir tom. */
     @Transactional
     public LobbyDTO removePlayerFromLobby(String lobbyCode, Long playerId) {
         // 1) Hämta lobby + spelare
@@ -165,48 +224,84 @@ public class LobbyService {
         lobbyRepository.save(lobby);
 
         // Broadcast snapshot
-        broadcastLobby(lobby);
+        broadcastSnapshotByCode(lobbyCode);
 
         return convertToDTO(lobby);
     }
 
+    /** Sätter/av-sätter ready på en spelare och broadcastar snapshot. */
     @Transactional
-    public LobbyDTO setReadyAndBroadcast(String code, Long playerId, boolean ready) {
-        var lobby = lobbyRepository.findByLobbyCode(code)
+    public LobbyDTO setReadyAndBroadcast(String lobbyCode, Long playerId, boolean ready) {
+        Lobby lobby = lobbyRepository.findByLobbyCode(lobbyCode)
                 .orElseThrow(() -> new LobbyNotFoundException("Lobby not found"));
-        var player = playerRepository.findById(playerId)
+
+        Player player = playerRepository.findById(playerId)
                 .orElseThrow(() -> new PlayerNotFoundException("Player not found"));
 
-        if (player.getLobby() == null || !player.getLobby().getId().equals(lobby.getId()))
+        if (player.getLobby() == null || !player.getLobby().getId().equals(lobby.getId())) {
             throw new PlayerNotFoundException("Player is not in this lobby");
+        }
 
         player.setReady(ready);
-        playerRepository.saveAndFlush(player); // skriv ut direkt så det syns i DB på en gång
+        playerRepository.saveAndFlush(player);
 
-        // Sätt state och broadcasta snapshot
-        messagingTemplate.convertAndSend("/lobby/" + code, convertToDTO(lobby));
+        // WS: skicka snapshot
+        broadcastSnapshotByCode(lobbyCode);
         return convertToDTO(lobby);
     }
 
-    // Metod som startar spelet och broadcastar snapshot
+    /**
+     * Nollar allas ready i lobbyn (bra för "Play again") och broadcastar snapshot.
+     */
+    @Transactional
+    public void resetReadyAndBroadcast(String lobbyCode) {
+        var lobby = lobbyRepository.findByLobbyCode(lobbyCode)
+                .orElseThrow(() -> new LobbyNotFoundException("Lobby not found"));
+
+        // 1) Nolla ready
+        if (lobby.getPlayers() != null) {
+            lobby.getPlayers().forEach(p -> p.setReady(false));
+            playerRepository.saveAll(lobby.getPlayers());
+        }
+
+        // 2) Tillbaka till WAITING
+        lobby.setGameState(GameState.WAITING);
+        lobbyRepository.save(lobby);
+
+        // 3) Nolla pågående runda (så klienten inte tror att spelet fortsätter)
+        gameService.clearRound(lobbyCode);
+
+        // 4) Broadcast ny snapshot (players + WAITING + round=null)
+        broadcastSnapshotByCode(lobbyCode);
+    }
+
+    /**
+     * Host startar spelet: sätt IN_GAME, initiera första rundan och broadcasta
+     * snapshot (med round).
+     */
     @Transactional
     public LobbyDTO startGameAndBroadcast(String code, Long playerId) {
-        var lobby = lobbyRepository.findByLobbyCode(code)
+        Lobby lobby = lobbyRepository.findByLobbyCode(code)
                 .orElseThrow(() -> new LobbyNotFoundException("Lobby not found"));
-        var player = playerRepository.findById(playerId)
+        Player player = playerRepository.findById(playerId)
                 .orElseThrow(() -> new PlayerNotFoundException("Player not found"));
 
-        // Måste vara host för att starta
         if (player.getLobby() == null || !player.getLobby().getId().equals(lobby.getId()))
             throw new PlayerNotFoundException("Player is not in this lobby");
         if (!Boolean.TRUE.equals(player.isHost()))
             throw new IllegalStateException("Only host can start the game");
 
-        // Sätt state och broadcasta snapshot
         lobby.setGameState(GameState.IN_GAME);
         lobbyRepository.save(lobby);
 
-        messagingTemplate.convertAndSend("/lobby/" + code, convertToDTO(lobby));
+        // 1) Initiera första rundan (läggs i GameService.in-memory map)
+        gameService.startFirstRound(lobby.getLobbyCode(), /* total */ 5, /* questionSec */ 15, /* answerSec */ 5);
+
+        // 2) Bygg snapshot och skicka DIREKT
+        LobbySnapshotDTO snap = buildSnapshot(lobby);
+        System.out.println("DEBUG SNAPSHOT after start: " + snap); // tillfällig logg
+        messagingTemplate.convertAndSend("/lobby/" + code, snap);
+
         return convertToDTO(lobby);
     }
 }
