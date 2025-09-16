@@ -1,6 +1,6 @@
 package com.multiplayer_grupp1.multiplayer_grupp1.Dto;
 
-import lombok.AllArgsConstructor;
+// import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

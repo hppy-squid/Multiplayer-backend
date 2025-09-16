@@ -1,8 +1,8 @@
 package com.multiplayer_grupp1.multiplayer_grupp1.service;
 
 import com.multiplayer_grupp1.multiplayer_grupp1.Exceptions.*;
-import com.multiplayer_grupp1.multiplayer_grupp1.model.Lobby;
-import com.multiplayer_grupp1.multiplayer_grupp1.repository.LobbyRepository;
+// import com.multiplayer_grupp1.multiplayer_grupp1.model.Lobby;
+// import com.multiplayer_grupp1.multiplayer_grupp1.repository.LobbyRepository;
 import org.springframework.stereotype.Service;
 
 import com.multiplayer_grupp1.multiplayer_grupp1.Dto.PlayerDTO;
@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 public class PlayerService {
 
     private final PlayerRepository playerRepository;
-    private final LobbyRepository lobbyRepository;
+    // private final LobbyRepository lobbyRepository;
 
 
     // Konverterar PlayerDTO till Player entity för att spara i databasen
