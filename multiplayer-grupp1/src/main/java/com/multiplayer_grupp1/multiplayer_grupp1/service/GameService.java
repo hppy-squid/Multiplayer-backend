@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import com.multiplayer_grupp1.multiplayer_grupp1.model.Ready;
 import com.multiplayer_grupp1.multiplayer_grupp1.model.Response;
+import com.multiplayer_grupp1.multiplayer_grupp1.Dto.AnswerDTO;
 import com.multiplayer_grupp1.multiplayer_grupp1.Dto.AnswerMessage;
 
 import com.multiplayer_grupp1.multiplayer_grupp1.Dto.QuestionDTO;
@@ -61,31 +62,41 @@ public class GameService {
     private final TaskScheduler taskScheduler;
     
 
-
+    // Används denna ens för tillfället?
     public Ready toggleReady(Ready readyMsg) {
+        System.out.println("Toggleready körs iaf");
         // Bör toggla till det den inte är (detta gör den i teori återanvändbar om vi vill möjliggöra att toggla ready och inte ready)
         readyMsg.setReady(!readyMsg.isReady());
         return readyMsg;
     }
 
+    // Används denna ens för tillfället?
     // Denna behöver också toggla tillbaka till false efter skickat signal
     public Response responded(Response response) {
+        System.out.println("responded körs iaf");
         response.setHasResponded(!response.isHasResponded());
         return response;
     }
 
+
+    // Används denna ens för tillfället? 
     // En metod för att kontrollera om en spelare redan har svarat på en fråga
     private boolean hasPlayerAnswered(Long gameId, Long playerId, Long questionId) {
+        System.out.println("hasPlayerAnswered körs iaf");
         return playerAnswerRepository.existsByGameIdAndPlayerIdAndQuestionQuestionId(gameId, playerId, questionId);
     }
 
+    // Används denna ens för tillfället? 
     // En metod för att få vilken ordning svaren har kommit in i
     private int getAnswerOrder(Long gameId, Long questionId) {
+        System.out.println(" getAnswerOrder körs");
         return playerAnswerRepository.countByGameIdAndQuestionQuestionId(gameId, questionId) + 1;
     }
 
+    // Oklart om denna ens används just nu
     // En metod för att kontrollera om alla spelare har svarat på en fråga
     private boolean allPlayersAnswered(Long gameId, Long questionId) {
+        System.out.println("All players answered körs ");
         Game game = gameRepository.findById(gameId).orElseThrow(() -> new GameNotFoundException("Game not found"));
         Lobby lobby = game.getLobby();
         int totalPlayers = lobby.getPlayers().size();
@@ -93,14 +104,18 @@ public class GameService {
         return totalPlayers == answeredPlayers;
     }
 
+    // Oklart om denna ens körs 
     // En metod för att skicka resultaten till alla spelare i spelet via WebSocket
     private void sendResults(Long gameId, Long questionId) {
+        System.out.println("Sendresults körs");
         List<PlayerAnswer> results = playerAnswerRepository.findByGameIdAndQuestionQuestionId(gameId, questionId);
         messagingTemplate.convertAndSend("/response", results);
     }
 
+    // Tror ej denna körs 
     // Metod för att starta spelet
     public void startGame(String lobbyCode, Long questionId) {
+        System.out.println("Metod för att starta spelet körs iaf");
         // Hämta lobbyn från databasen via dess id. Kastar en LobbyNotFoundException om den inte finns
         Lobby lobby = lobbyRepository.findByLobbyCode(lobbyCode)
                 .orElseThrow(() -> new LobbyNotFoundException("Lobby not found"));
@@ -133,8 +148,10 @@ public class GameService {
         startNextQuestion(game.getId(), questionId);
     }
 
+    // Tror ej denna fungerar just nu
     // Metod för starta nästa fråga
     private void startNextQuestion(Long gameId, long questionId) {
+        System.out.println("Metod för att starta nästa fråga köra iaf");
         // Hämta spelet från databasen via dess id. Kastar en LobbyNotFoundException om den inte finns
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new GameNotFoundException("Lobby not found"));
@@ -149,7 +166,9 @@ public class GameService {
         messagingTemplate.convertAndSend("/response", question);
     }
 
+    // används ej för tillfället 
     public void submitAnswer(Long gameId, Long playerId, String answer, Long questionId) {
+        System.out.println("submitAnswer körs iaf");
         // Hämta lobbyn från databasen via dess id. Kastar en LobbyNotFoundException om den inte finns
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new LobbyNotFoundException("Lobby not found"));
@@ -165,28 +184,31 @@ public class GameService {
             throw new PlayerHasAlreadyAnswered("Player has already answered this question");
         }
 
+        System.out.println("Precis innan playeranswer");
         PlayerAnswer playerAnswer = new PlayerAnswer();
         playerAnswer.setPlayer(player);
         playerAnswer.setGame(game);
         playerAnswer.setQuestion(currentQuestion);
         playerAnswer.setAnswer(answer);
         playerAnswer.setAnsweredAt(LocalDateTime.now());
-        playerAnswer.setCorrect(answer.equals(currentQuestion.getCorrect_answer()));
-
 
         // Kontrollera om svaret är tomt eller null. Om det är det så blir svaret inkorrekt
         if (answer == null || answer.trim().isEmpty()) {
             playerAnswer.setCorrect(false);
+            System.out.println("Svaret e null för" + player.getPlayerName());
         } else {
-            playerAnswer.setCorrect(answer.equals(currentQuestion.getCorrect_answer()));
-
+            playerAnswer.setCorrect(answer.trim().equalsIgnoreCase(currentQuestion.getCorrect_answer().trim()));
+            System.out.println(playerAnswer.getAnswer() + "svaret är ej null och vi kollar om det är korrekt ");
         }
 
         int answerOrder = getAnswerOrder(gameId, questionId);
         playerAnswer.setAnswerOrder(answerOrder);
 
+        playerAnswerRepository.save(playerAnswer);
+
         //Kontrollera att alla har svarat
         if(allPlayersAnswered(gameId, questionId)) {
+            System.out.println("Metod för att beräkna poäng åkallas");
             calculateAndDistributePoints(game, currentQuestion.getQuestionId());
             gameRepository.save(game);
 
@@ -196,11 +218,11 @@ public class GameService {
             }
             sendResults(gameId, questionId);
         }
-        playerAnswerRepository.save(playerAnswer);
-
     }
 
+    // Åkallas inte då submitAnswer inte används för tillfället 
     private void calculateAndDistributePoints(Game game, Long questionId) {
+        System.out.println("calculateMetoden körs iaf");
         List<PlayerAnswer> answers = playerAnswerRepository
                 .findByGameIdAndQuestionQuestionIdOrderByAnsweredAtAsc(game.getId(), questionId);
 
@@ -213,6 +235,7 @@ public class GameService {
 
                 Player player = answer.getPlayer();
                 player.setScore(player.getScore() + answer.getPointsEarned());
+                System.out.println(player.getScore() + player.getPlayerName() + "Snälla visa poäng och namn här");
                 playerRepository.save(player);
             } else {
                 answer.setPointsEarned(0);
@@ -228,7 +251,9 @@ public class GameService {
 
     }
 
+    // Används inte just nu
     public void nextQuestion(Long gameId, Long questionId) {
+        System.out.println("nextQuestion används iaf");
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new GameNotFoundException("Lobby not found"));
 
@@ -247,7 +272,9 @@ public class GameService {
         startNextQuestion(gameId, questionId);
     }
 
+
     private void endGame(Long lobbyId) {
+        System.out.println("endGame används iaf");
         Game game = gameRepository.findByLobbyId(lobbyId)
                 .orElseThrow(() -> new GameNotFoundException("Game not found"));
 
@@ -371,38 +398,59 @@ public class GameService {
     }
 
     public void handleAnswer(String lobbyCode, AnswerMessage msg) {
-  var cur = rounds.get(lobbyCode);
-  if (cur == null || cur.getPhase() != RoundState.Phase.QUESTION) return;
+        var cur = rounds.get(lobbyCode);
+        if (cur == null || cur.getPhase() != RoundState.Phase.QUESTION) return;
+        System.out.println("Frågan att hämta svar för är " + cur.getQuestionId());
 
-  // räkna upp answeredCount
-  int prev = (cur.getAnsweredCount() == null ? 0 : cur.getAnsweredCount());
-  var bumped = new RoundState(cur.getQuestionId(), cur.getIndex(), cur.getTotal(),
-                              cur.getPhase(), cur.getEndsAtEpochMillis(), prev + 1);
-  rounds.put(lobbyCode, bumped);
+        AnswerDTO dto = questionRepository.getCorrectAnswerById(cur.getQuestionId());
+        boolean isCorrect = dto != null && dto.getCorrectAnswer() != null
+            && dto.getCorrectAnswer().equalsIgnoreCase(msg.getOption());
 
-  // Kolla om alla är klara
-  int totalPlayers = lobbyRepository.findByLobbyCode(lobbyCode)
-      .map(l -> l.getPlayers() == null ? 0 : l.getPlayers().size())
-      .orElse(0);
+        System.out.println("Svaret på frågan är " + dto.getCorrectAnswer());
+        System.out.println("Användarens svar var " + msg.getOption());        
 
-  if (totalPlayers > 0 && bumped.getAnsweredCount() >= totalPlayers) {
-    // hoppa till ANSWER direkt
-    var answer = new RoundState(
-      cur.getQuestionId(), cur.getIndex(), cur.getTotal(),
-      RoundState.Phase.ANSWER,
-      Instant.now().plusSeconds(10).toEpochMilli(), // 10 sek visning (justera)
-      bumped.getAnsweredCount()
-    );
-    rounds.put(lobbyCode, answer);
-    broadcastSnapshotByCode(lobbyCode);
 
-    // planera nästa fråga/avslut efter answer-fasen
-    scheduleNextRoundOrFinish(lobbyCode, new Date(answer.getEndsAtEpochMillis()));
-  } else {
-    // bara uppdatera räkningen
-    broadcastSnapshotByCode(lobbyCode);
-  }
-}
+        lobbyRepository.findByLobbyCode(lobbyCode).ifPresent(lobby -> {
+        var player = lobby.getPlayers().stream()
+            .filter(p -> p.getId().equals(msg.getPlayerId()))
+            .findFirst()
+            .orElse(null);
+
+            if (player != null && isCorrect) {
+                player.setScore(player.getScore() + 1);
+                lobbyRepository.save(lobby); // persist updated score
+            }
+        });
+
+        // räkna upp answeredCount
+        int prev = (cur.getAnsweredCount() == null ? 0 : cur.getAnsweredCount());
+        var bumped = new RoundState(cur.getQuestionId(), cur.getIndex(), cur.getTotal(),
+                                    cur.getPhase(), cur.getEndsAtEpochMillis(), prev + 1);
+        rounds.put(lobbyCode, bumped);
+
+        // Kolla om alla är klara
+        int totalPlayers = lobbyRepository.findByLobbyCode(lobbyCode)
+            .map(l -> l.getPlayers() == null ? 0 : l.getPlayers().size())
+            .orElse(0);
+
+        if (totalPlayers > 0 && bumped.getAnsweredCount() >= totalPlayers) {
+            // hoppa till ANSWER direkt
+            var answer = new RoundState(
+                cur.getQuestionId(), cur.getIndex(), cur.getTotal(),
+                RoundState.Phase.ANSWER,
+                Instant.now().plusSeconds(10).toEpochMilli(), // 10 sek visning (justera)
+                bumped.getAnsweredCount()
+            );
+            rounds.put(lobbyCode, answer);
+            broadcastSnapshotByCode(lobbyCode);
+
+            // planera nästa fråga/avslut efter answer-fasen
+            scheduleNextRoundOrFinish(lobbyCode, new Date(answer.getEndsAtEpochMillis()));
+        } else {
+            // bara uppdatera räkningen
+            broadcastSnapshotByCode(lobbyCode);
+        }
+    }
 
     private void scheduleSwitchToAnswer(String lobbyCode, int answerSeconds, Date when) {
   taskScheduler.schedule(() -> {
@@ -463,7 +511,7 @@ private LobbySnapshotDTO buildSnapshot(Lobby lobby) {
             p.getPlayerName(),
             Boolean.TRUE.equals(p.isHost()),
             Boolean.TRUE.equals(p.isReady()),
-            p.getScore()
+            p.getScore() 
         ))
         .toList();
 
