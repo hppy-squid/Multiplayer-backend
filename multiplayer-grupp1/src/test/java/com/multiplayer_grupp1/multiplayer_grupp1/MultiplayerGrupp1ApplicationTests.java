@@ -52,8 +52,8 @@ class MultiplayerGrupp1ApplicationTests {
 		// Här assertar vi vad som ska hända när vi gör så 
 		// Vi assertar att vi ska få tillbaka false för att spelare med namnet Billy finns i databasen
 		// Vi assertar även att playerExists inte är null
-		Assertions.assertThat(playerExists).isFalse();
 		Assertions.assertThat(playerExists).isNotNull();
+		Assertions.assertThat(playerExists).isFalse();
 
 	}
 
