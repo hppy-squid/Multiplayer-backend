@@ -61,7 +61,7 @@ public class GameService {
     private final TaskScheduler taskScheduler;
     
 
-    // Används denna ens för tillfället?
+   /*  // Används denna ens för tillfället?
     public Ready toggleReady(Ready readyMsg) {
         System.out.println("Toggleready körs iaf");
         // Bör toggla till det den inte är (detta gör den i teori återanvändbar om vi vill möjliggöra att toggla ready och inte ready)
@@ -290,7 +290,7 @@ public class GameService {
 
         messagingTemplate.convertAndSend("/response", players);
 
-    }
+    } */
 
     // Håller aktuell runda per lobby (in-memory)
     private final Map<String, RoundState> rounds = new ConcurrentHashMap<>();
@@ -398,7 +398,7 @@ public class GameService {
         Integer answeredCount = cur.getAnsweredCount();
         if (totalPlayers > 0 && answeredCount != null && answeredCount >= totalPlayers) {
             cur.setPhase(RoundState.Phase.ANSWER);
-            cur.setEndsAtEpochMillis(Instant.now().plusSeconds(10).toEpochMilli()); // justera tid
+            cur.setEndsAtEpochMillis(Instant.now().plusSeconds(5).toEpochMilli()); // justera tid
 
             // Broadcast fasbytet
             broadcastSnapshotByCode(lobbyCode);
@@ -449,7 +449,7 @@ public class GameService {
             rounds.put(lobbyCode, next);
             broadcastSnapshotByCode(lobbyCode);
 
-            scheduleSwitchToAnswer(lobbyCode, 10, new Date(endsAt));
+            scheduleSwitchToAnswer(lobbyCode, 5, new Date(endsAt));
         }, when);
     }
 

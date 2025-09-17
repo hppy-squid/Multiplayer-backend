@@ -1,6 +1,5 @@
-package com.multiplayer_grupp1.multiplayer_grupp1.controller;
+/* package com.multiplayer_grupp1.multiplayer_grupp1.controller;
 
-// import com.multiplayer_grupp1.multiplayer_grupp1.model.Game;
 import com.multiplayer_grupp1.multiplayer_grupp1.service.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,3 +34,4 @@ public class GameController {
     }
 
 }
+ */

@@ -5,8 +5,10 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter 
+@Setter
+@NoArgsConstructor 
+@AllArgsConstructor
 public class StartGame {
     private Long playerId; // hostens id
 }
