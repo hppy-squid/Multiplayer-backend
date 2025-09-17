@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+// Entitet för response, typar upp hur en repsonse ser ut
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

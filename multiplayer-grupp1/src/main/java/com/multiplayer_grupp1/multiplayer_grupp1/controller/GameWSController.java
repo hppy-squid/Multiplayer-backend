@@ -2,8 +2,6 @@ package com.multiplayer_grupp1.multiplayer_grupp1.controller;
 
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-// import org.springframework.messaging.handler.annotation.SendTo;
-// import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import com.multiplayer_grupp1.multiplayer_grupp1.model.Ready;
@@ -16,15 +14,13 @@ import lombok.RequiredArgsConstructor;
 
 
 // Jag tog bort @SendTo och använder istället SimpMessagingTemplate eftersom @SendTo alltid skickar till en statisk destination. 
-//I vårt fall behöver vi dynamiska destinationsadresser som beror på vilket lobbyCode som används. 
+// I vårt fall behöver vi dynamiska destinationsadresser som beror på vilket lobbyCode som används. 
 // Med messagingTemplate.convertAndSend(...) kan vi bygga destinationssträngen vid körning och därmed skicka meddelanden till rätt lobby.
-
 @Controller
 @RequiredArgsConstructor
 public class GameWSController {
 
     private final GameService gameService;
-    // private final SimpMessagingTemplate messagingTemplate;
     private final LobbyService lobbyService;
 
     // Mapping för att skicka att användare är redo i lobbyn
@@ -45,20 +41,14 @@ public class GameWSController {
         gameService.handleAnswer(lobbyCode, payload);
     }
 
+    // Mapping för att låta hosta starta en match och därigenom starta för de andra också
     @MessageMapping("/game/{lobbyCode}/start")
     public void handleStart(@DestinationVariable String lobbyCode, StartGame msg) {
         System.out.println("WS START for lobby=" + lobbyCode + " playerId=" + msg.getPlayerId());
         lobbyService.startGameAndBroadcast(lobbyCode, msg.getPlayerId());
     }
 
-    /*
-     // Mapping för att uppdatera tiden
-     * 
-     * @MessageMapping("/game/{lobbyCode}")
-     * 
-     * @SendTo("/timer")
-     */
-
+    // Mapping för en publik hjälpare som skickar information till användarna och håller dem uppdaterade
     @MessageMapping("/lobby/{lobbyCode}/resync")
     public void handleResync(@DestinationVariable String lobbyCode) {
         lobbyService.broadcastSnapshotByCode(lobbyCode);

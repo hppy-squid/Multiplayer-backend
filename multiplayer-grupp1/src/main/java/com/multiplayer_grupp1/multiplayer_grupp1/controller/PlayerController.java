@@ -19,6 +19,7 @@ public class PlayerController {
 
     private final PlayerService playerService;
 
+    // Mapping för att skapa spelare
     @PostMapping("/create")
     public PlayerDTO createPlayer(@RequestBody Player player){
         return playerService.createPlayer(player);
