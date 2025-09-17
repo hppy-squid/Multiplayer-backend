@@ -203,6 +203,7 @@ public class LobbyService {
         player.setLobby(null);
         player.setHost(false);
         player.setReady(false);
+        player.setScore(0);
         playerRepository.save(player);
 
         // 4) Om lobbyn blev tom: radera den (eller markera som inaktiv)
