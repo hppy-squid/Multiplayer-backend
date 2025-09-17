@@ -199,7 +199,7 @@ public class GameService {
             rounds.put(lobbyCode, next);
             broadcastSnapshotByCode(lobbyCode);
 
-            scheduleSwitchToAnswer(lobbyCode, 5, new Date(endsAt));
+            scheduleSwitchToAnswer(lobbyCode, 15, new Date(endsAt));
         }, when);
     }
 
