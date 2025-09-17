@@ -4,7 +4,7 @@ Denna backend tillhör Quiz spelet - https://clownfish-app-5gol7.ondigitalocean.
 
 ## Installationer
 
-Apiet är byggd med SpringBoot och använder:
+Backend är byggd med Spring Boot och använder:
 
 - Spring WebSocket
 
@@ -23,9 +23,8 @@ git clone https://github.com/hppy-squid/Multiplayer-backend
 ### Starta MySQL databas
 ```
 Uppdatera application.propersties med din databasinformation
-och sätt url till "http://localhost:8080"
 ```
-### kör applikationen
+### Kör applikationen
 ```
 Run java
 ```
