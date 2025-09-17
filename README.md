@@ -31,7 +31,4 @@ Run java
 
 ### Följ länken för att hämta frontend och starta lokalt
 
- backend - https://github.com/hppy-squid/Multiplayer-backend
-
-
- 
+frontend - https://github.com/hppy-squid/Multiplayer-frontend
