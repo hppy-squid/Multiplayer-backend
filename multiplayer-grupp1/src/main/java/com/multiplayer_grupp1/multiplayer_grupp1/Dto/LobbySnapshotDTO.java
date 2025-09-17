@@ -6,6 +6,7 @@ import java.util.List;
 
 import lombok.*;
 
+// DTO för lobbysnapshot, med detta skickas information via ws till klienterna om bl.a. spelares poäng, om de är ready, om de svarat, om de har rätt etc. 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

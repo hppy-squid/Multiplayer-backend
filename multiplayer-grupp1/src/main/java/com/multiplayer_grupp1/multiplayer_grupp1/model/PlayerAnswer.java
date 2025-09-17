@@ -1,4 +1,4 @@
-package com.multiplayer_grupp1.multiplayer_grupp1.model;
+/* package com.multiplayer_grupp1.multiplayer_grupp1.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -41,3 +41,4 @@ public class PlayerAnswer {
 
     private int answerOrder;
 }
+ */

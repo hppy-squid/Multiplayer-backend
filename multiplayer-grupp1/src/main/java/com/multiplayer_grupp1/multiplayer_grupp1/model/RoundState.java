@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+// Typer upp staten av en runda, bland annat vilken fråga är det, hur många har svarat, har de svarat rätt
 public class RoundState {
     public enum Phase { QUESTION, ANSWER }
 

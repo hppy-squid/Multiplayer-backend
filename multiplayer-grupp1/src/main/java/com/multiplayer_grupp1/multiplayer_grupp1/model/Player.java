@@ -3,6 +3,7 @@ package com.multiplayer_grupp1.multiplayer_grupp1.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+// Entitet för spelare, som typar upp hur de ser ut
 @Entity
 @RequiredArgsConstructor
 @Getter

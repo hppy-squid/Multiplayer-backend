@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+// Typar upp requestsen för när hosten startar spelet
 @Getter 
 @Setter
 @NoArgsConstructor 

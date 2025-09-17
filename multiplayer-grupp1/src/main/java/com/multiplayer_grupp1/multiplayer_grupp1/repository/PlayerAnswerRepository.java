@@ -1,4 +1,4 @@
-package com.multiplayer_grupp1.multiplayer_grupp1.repository;
+/* package com.multiplayer_grupp1.multiplayer_grupp1.repository;
 
 import com.multiplayer_grupp1.multiplayer_grupp1.model.PlayerAnswer;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,3 +14,4 @@ public interface PlayerAnswerRepository extends JpaRepository<PlayerAnswer, Long
 
     List<PlayerAnswer> findByGameIdAndQuestionQuestionId(Long gameId, Long questionId);
 }
+ */

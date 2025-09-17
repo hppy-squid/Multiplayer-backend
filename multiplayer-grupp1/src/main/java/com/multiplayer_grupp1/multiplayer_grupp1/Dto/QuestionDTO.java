@@ -4,6 +4,7 @@ package com.multiplayer_grupp1.multiplayer_grupp1.Dto;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+// DTO för question som skickar med frågan, frågoid och svarsalternativs
 @Data
 @NoArgsConstructor
 public class QuestionDTO {
