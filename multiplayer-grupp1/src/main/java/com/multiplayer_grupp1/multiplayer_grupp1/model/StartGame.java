@@ -5,8 +5,11 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+// Typar upp requestsen för när hosten startar spelet
+@Getter 
+@Setter
+@NoArgsConstructor 
+@AllArgsConstructor
 public class StartGame {
     private Long playerId; // hostens id
 }

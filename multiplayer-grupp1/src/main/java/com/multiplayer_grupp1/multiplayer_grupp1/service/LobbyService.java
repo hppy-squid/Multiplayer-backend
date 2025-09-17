@@ -20,10 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-// Ändringar:
-// - Lade till metod för att lämna en lobby. Hanterar olika scenarion som att host lämnar, lobby blir tom osv.
-// - Lade till null kontrollering i convertToDTO för att undvika NullPointerException när en lobby är tom.
-
 
 @Service
 @RequiredArgsConstructor

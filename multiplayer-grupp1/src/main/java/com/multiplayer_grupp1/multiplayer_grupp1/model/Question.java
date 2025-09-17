@@ -4,6 +4,7 @@ package com.multiplayer_grupp1.multiplayer_grupp1.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+// Entitet för question som typar upp hur det ser ut
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor

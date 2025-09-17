@@ -3,8 +3,7 @@ package com.multiplayer_grupp1.multiplayer_grupp1.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-// import java.util.List;
-
+// Entitet för game
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,8 +22,6 @@ public class Game {
 
     @Enumerated(EnumType.STRING)
     private GameState gameState;
-
-    // private static final int maxQuestions = 5;
 
     private int currentQuestionNumber = 0;
 

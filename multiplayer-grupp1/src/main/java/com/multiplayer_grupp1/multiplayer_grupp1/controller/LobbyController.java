@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 // - Lade till @CrossOrigin("*") för att frontend (på annan domän) ska kunna anropa API:t.
 // - Lade till endpoint för att lämna en lobby.
 
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/lobby")
@@ -25,6 +24,7 @@ public class LobbyController {
     private final LobbyService lobbyService;
     private final SimpMessagingTemplate messagingTemplate;
 
+    // Mapping för att skapa lobby, då autogenreras en LobbyCode som andra användare sedan kan joina din lobby med
     @PostMapping("/create/{playerId}")
     public LobbyDTO createLobby(@PathVariable Long playerId) {
         LobbyDTO dto = lobbyService.createLobby(playerId);
@@ -32,6 +32,7 @@ public class LobbyController {
         return dto;
     }
 
+    // Mapping för att joina någons lobby om du har den giltiga lobbycoden och lobbyn ej är full 
     @PostMapping("/join/{lobbyCode}/{playerId}")
     public LobbyDTO joinLobby(@PathVariable String lobbyCode, @PathVariable Long playerId) {
         LobbyDTO dto = lobbyService.addPlayerToLobby(lobbyCode, playerId);
@@ -40,6 +41,7 @@ public class LobbyController {
         return dto;
     }
 
+    // Mapping för att lämna en lobby
     @PostMapping("/leave/{lobbyCode}/{playerId}")
         public LobbyDTO leaveLobby(@PathVariable String lobbyCode, @PathVariable Long playerId) {
         LobbyDTO dto = lobbyService.removePlayerFromLobby(lobbyCode, playerId);
@@ -48,14 +50,10 @@ public class LobbyController {
         return dto;
     }
 
-     @PostMapping("/{lobbyCode}/ready/reset")
+    // Mapping för att nollställa användares readysetting så att de då på nytt kan indikera att de är redo för att starta ett spel
+    @PostMapping("/{lobbyCode}/ready/reset")
     public ResponseEntity<Void> resetReady(@PathVariable String lobbyCode) {
         lobbyService.resetReadyAndBroadcast(lobbyCode);
         return ResponseEntity.ok().build();
     }
-
-    // @GetMapping("/find/{lobbyId}")
-    // public LobbyDTO findLobbyById(@PathVariable Long lobbyId) {
-    //     return lobbyService.findLobbyById(lobbyId);
-    // }
 }

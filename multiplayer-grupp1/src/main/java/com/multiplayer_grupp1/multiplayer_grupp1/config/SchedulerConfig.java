@@ -6,6 +6,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @Configuration
 public class SchedulerConfig {
+
+  // Används för att schemalägga aktiviteter
   @Bean
   public ThreadPoolTaskScheduler taskScheduler() {
     var s = new ThreadPoolTaskScheduler();
